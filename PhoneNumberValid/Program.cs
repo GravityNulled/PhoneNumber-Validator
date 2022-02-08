@@ -14,10 +14,11 @@ namespace PhoneNumberValid
         static void Main(string[] args)
         {
             var phoneNumberUtil = PhoneNumbers.PhoneNumberUtil.GetInstance();
-            var phoneA = phoneNumberUtil.Parse("+254720179 897", "US");
+            var phoneA = phoneNumberUtil.Parse("+254720179897", "US");
             var x = phoneNumberUtil.IsValidNumber(phoneA);
             var countryCode = phoneNumberUtil.GetCountryCodeForRegion("KE");
-            Console.WriteLine(x);
+            var phoneNumberss = phoneNumberUtil.Format(phoneA, PhoneNumberFormat.INTERNATIONAL);
+            Console.WriteLine(phoneNumberss);
             Thread.Sleep(-1);
         }
     }
