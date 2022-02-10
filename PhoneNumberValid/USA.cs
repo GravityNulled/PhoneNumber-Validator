@@ -17,8 +17,7 @@ namespace PhoneNumberValid
         public List<int> Minnesota { get; set; }
         public List<int> Illinois { get; set; }
         public List<int> Arkansas { get; set; }
-
-        [JsonProperty("New Mexico")]
+        
         public List<int> NewMexico { get; set; }
         public List<int> Indiana { get; set; }
         public List<int> Maryland { get; set; }
