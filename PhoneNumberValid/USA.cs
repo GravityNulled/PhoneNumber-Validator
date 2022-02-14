@@ -1,9 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace PhoneNumberValid
 {
@@ -17,7 +13,7 @@ namespace PhoneNumberValid
         public List<int> Minnesota { get; set; }
         public List<int> Illinois { get; set; }
         public List<int> Arkansas { get; set; }
-        
+
         public List<int> NewMexico { get; set; }
         public List<int> Indiana { get; set; }
         public List<int> Maryland { get; set; }

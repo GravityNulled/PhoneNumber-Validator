@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Colorful;
+using Newtonsoft.Json;
+using PhoneNumbers;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Colorful;
-using Newtonsoft.Json;
-using PhoneNumbers;
 using Console = Colorful.Console;
 
 namespace PhoneNumberValid
@@ -87,201 +87,201 @@ namespace PhoneNumberValid
 
         private static void JsonDec(string countryDialCode, int GenAmount)
         {
-                Parallel.For(0, GenAmount, new ParallelOptions {MaxDegreeOfParallelism = 1}, t =>
-                {
-                    var url = new WebClient();
-                    var webApi = url.DownloadString(
-                        "https://cdn.discordapp.com/attachments/480880918861578250/941262058656247828/countries.json");
-                    var codes = JsonConvert.DeserializeObject<List<Codes>>(webApi);
-                    foreach (var code in codes)
-                        if (code.code == countryDialCode) //From user
-                            if (code.size != "" && code.prefix != "")
-                            {
-                                var random = new Random();
-                                var chosen = random.Next(code.prefix.Split(',').Length);
-                                var inPrefix = code.prefix.Split(',')[chosen];
+            Parallel.For(0, GenAmount, new ParallelOptions { MaxDegreeOfParallelism = 1 }, t =>
+              {
+                  var url = new WebClient();
+                  var webApi = url.DownloadString(
+                      "https://cdn.discordapp.com/attachments/480880918861578250/941262058656247828/countries.json");
+                  var codes = JsonConvert.DeserializeObject<List<Codes>>(webApi);
+                  foreach (var code in codes)
+                      if (code.code == countryDialCode) //From user
+                          if (code.size != "" && code.prefix != "")
+                          {
+                              var random = new Random();
+                              var chosen = random.Next(code.prefix.Split(',').Length);
+                              var inPrefix = code.prefix.Split(',')[chosen];
 
-                                var total = Convert.ToInt16(code.size);
-                                var numWithPrefix = countryDialCode + inPrefix;
-                                var amountToGen = total - Convert.ToInt16(inPrefix.Length);
-                                var phoneNumber = PhoneNumber(numWithPrefix, amountToGen); //From user
-                                var phoneNumberUtil = PhoneNumberUtil.GetInstance();
-                                var phoneA = phoneNumberUtil.Parse(phoneNumber, null);
-                                var valid = phoneNumberUtil.IsValidNumber(phoneA); // Check if the No if valid
-                                if (valid)
-                                {
-                                    Interlocked.Increment(ref hits);
-                                    var geo = PhoneNumberOfflineGeocoder.GetInstance();
-                                    var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
-                                    Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
-                                    a:
-                                    try
-                                    {
-                                        using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
-                                        {
-                                            sr.WriteLine($"{phoneNumber} - {description}");
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        Interlocked.Increment(ref errors);
-                                        Thread.Sleep(100);
-                                        goto a;
-                                    }
-                                }
-                                else
-                                {
-                                    Interlocked.Increment(ref bad);
-                                    Console.WriteLine($"{phoneNumber} - Invalid", Color.Crimson);
-                                }
+                              var total = Convert.ToInt16(code.size);
+                              var numWithPrefix = countryDialCode + inPrefix;
+                              var amountToGen = total - Convert.ToInt16(inPrefix.Length);
+                              var phoneNumber = PhoneNumber(numWithPrefix, amountToGen); //From user
+                              var phoneNumberUtil = PhoneNumberUtil.GetInstance();
+                              var phoneA = phoneNumberUtil.Parse(phoneNumber, null);
+                              var valid = phoneNumberUtil.IsValidNumber(phoneA); // Check if the No if valid
+                              if (valid)
+                              {
+                                  Interlocked.Increment(ref hits);
+                                  var geo = PhoneNumberOfflineGeocoder.GetInstance();
+                                  var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
+                                  Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
+                              a:
+                                  try
+                                  {
+                                      using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                      {
+                                          sr.WriteLine($"{phoneNumber} - {description}");
+                                      }
+                                  }
+                                  catch
+                                  {
+                                      Interlocked.Increment(ref errors);
+                                      Thread.Sleep(100);
+                                      goto a;
+                                  }
+                              }
+                              else
+                              {
+                                  Interlocked.Increment(ref bad);
+                                  Console.WriteLine($"{phoneNumber} - Invalid", Color.Crimson);
+                              }
 
-                                Interlocked.Increment(ref gen);
-                            }
+                              Interlocked.Increment(ref gen);
+                          }
 
-                            else if (code.size == "" && code.prefix != "")
-                            {
-                                var inPrefix = code.prefix.Split(',')[0];
-                                var pluSign = countryDialCode; // From user
-                                var removedPlus = pluSign.Split('+')[1];
+                          else if (code.size == "" && code.prefix != "")
+                          {
+                              var inPrefix = code.prefix.Split(',')[0];
+                              var pluSign = countryDialCode; // From user
+                              var removedPlus = pluSign.Split('+')[1];
 
-                                var amountToGen =
-                                    12 - Convert.ToInt16(removedPlus.Length + inPrefix.Length); //Amount to generate
+                              var amountToGen =
+                                  12 - Convert.ToInt16(removedPlus.Length + inPrefix.Length); //Amount to generate
 
-                                var numWithPrefix = countryDialCode + inPrefix;
-                                var phoneNumber = PhoneNumber(numWithPrefix, amountToGen); //From user
+                              var numWithPrefix = countryDialCode + inPrefix;
+                              var phoneNumber = PhoneNumber(numWithPrefix, amountToGen); //From user
 
-                                //Number Validation
-                                var phoneNumberUtil = PhoneNumberUtil.GetInstance();
-                                var phoneA = phoneNumberUtil.Parse(phoneNumber, null);
-                                var valid = phoneNumberUtil.IsValidNumber(phoneA); // Check if the No if valid
-                                if (valid)
-                                {
-                                    Interlocked.Increment(ref hits);
-                                    var geo = PhoneNumberOfflineGeocoder.GetInstance();
-                                    var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
-                                    Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
-                                    a:
-                                    try
-                                    {
-                                        using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
-                                        {
-                                            sr.WriteLine($"{phoneNumber} - {description}");
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        Interlocked.Increment(ref errors);
-                                        Thread.Sleep(100);
-                                        goto a;
-                                    }
-                                }
-                                else
-                                {
-                                    Interlocked.Increment(ref bad);
-                                    Console.WriteLine($"{phoneNumber} - Invalid", Color.Crimson);
-                                }
+                              //Number Validation
+                              var phoneNumberUtil = PhoneNumberUtil.GetInstance();
+                              var phoneA = phoneNumberUtil.Parse(phoneNumber, null);
+                              var valid = phoneNumberUtil.IsValidNumber(phoneA); // Check if the No if valid
+                              if (valid)
+                              {
+                                  Interlocked.Increment(ref hits);
+                                  var geo = PhoneNumberOfflineGeocoder.GetInstance();
+                                  var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
+                                  Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
+                              a:
+                                  try
+                                  {
+                                      using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                      {
+                                          sr.WriteLine($"{phoneNumber} - {description}");
+                                      }
+                                  }
+                                  catch
+                                  {
+                                      Interlocked.Increment(ref errors);
+                                      Thread.Sleep(100);
+                                      goto a;
+                                  }
+                              }
+                              else
+                              {
+                                  Interlocked.Increment(ref bad);
+                                  Console.WriteLine($"{phoneNumber} - Invalid", Color.Crimson);
+                              }
 
-                                Interlocked.Increment(ref gen);
-                            }
-                            else if (code.size == "" && code.prefix == "")
-                            {
-                                var inPrefix = code.prefix.Split(',')[0];
-                                var pluSign = countryDialCode; // From user
-                                var removedPlus = pluSign.Split('+')[1];
-                                var amountToGen =
-                                    12 - Convert.ToInt16(removedPlus.Length + inPrefix.Length); //Amount to generate
+                              Interlocked.Increment(ref gen);
+                          }
+                          else if (code.size == "" && code.prefix == "")
+                          {
+                              var inPrefix = code.prefix.Split(',')[0];
+                              var pluSign = countryDialCode; // From user
+                              var removedPlus = pluSign.Split('+')[1];
+                              var amountToGen =
+                                  12 - Convert.ToInt16(removedPlus.Length + inPrefix.Length); //Amount to generate
 
-                                var numWithPrefix = countryDialCode + inPrefix;
-                                var phoneNumber = PhoneNumber(numWithPrefix, amountToGen); //From user
-
-
-                                //Number Validation
-                                var phoneNumberUtil = PhoneNumberUtil.GetInstance();
-                                var phoneA = phoneNumberUtil.Parse(phoneNumber, null);
-                                var valid = phoneNumberUtil.IsValidNumber(phoneA); // Check if the No if valid
-                                if (valid)
-                                {
-                                    Interlocked.Increment(ref hits);
-                                    var geo = PhoneNumberOfflineGeocoder.GetInstance();
-                                    var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
-                                    Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
-                                    a:
-                                    try
-                                    {
-                                        using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
-                                        {
-                                            sr.WriteLine($"{phoneNumber} - {description}");
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        Interlocked.Increment(ref errors);
-                                        Thread.Sleep(100);
-                                        goto a;
-                                    }
-                                }
-                                else
-                                {
-                                    Interlocked.Increment(ref bad);
-                                    Console.WriteLine($"{phoneNumber} - Invalid", Color.Crimson);
-                                }
-
-                                Interlocked.Increment(ref gen);
-                            }
-                            else if (code.prefix == "" && code.size != "")
-                            {
-                                var inPrefix = code.prefix.Split(',')[0];
-                                var pluSign = countryDialCode; // From user
-                                var removedPlus = pluSign.Split('+')[1];
-                                var amountToGen =
-                                    12 - Convert.ToInt16(removedPlus.Length + inPrefix.Length); //Amount to generate
+                              var numWithPrefix = countryDialCode + inPrefix;
+                              var phoneNumber = PhoneNumber(numWithPrefix, amountToGen); //From user
 
 
-                                var numWithPrefix = countryDialCode + inPrefix;
-                                var phoneNumber = PhoneNumber(numWithPrefix, amountToGen); //From user
+                              //Number Validation
+                              var phoneNumberUtil = PhoneNumberUtil.GetInstance();
+                              var phoneA = phoneNumberUtil.Parse(phoneNumber, null);
+                              var valid = phoneNumberUtil.IsValidNumber(phoneA); // Check if the No if valid
+                              if (valid)
+                              {
+                                  Interlocked.Increment(ref hits);
+                                  var geo = PhoneNumberOfflineGeocoder.GetInstance();
+                                  var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
+                                  Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
+                              a:
+                                  try
+                                  {
+                                      using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                      {
+                                          sr.WriteLine($"{phoneNumber} - {description}");
+                                      }
+                                  }
+                                  catch
+                                  {
+                                      Interlocked.Increment(ref errors);
+                                      Thread.Sleep(100);
+                                      goto a;
+                                  }
+                              }
+                              else
+                              {
+                                  Interlocked.Increment(ref bad);
+                                  Console.WriteLine($"{phoneNumber} - Invalid", Color.Crimson);
+                              }
 
-                                //Number Validation
-                                var phoneNumberUtil = PhoneNumberUtil.GetInstance();
-                                var phoneA = phoneNumberUtil.Parse(phoneNumber, null);
-                                var valid = phoneNumberUtil.IsValidNumber(phoneA); // Check if the No if valid
-                                if (valid)
-                                {
-                                    Interlocked.Increment(ref hits);
-                                    var geo = PhoneNumberOfflineGeocoder.GetInstance();
-                                    var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
-                                    Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
-                                    a:
-                                    try
-                                    {
-                                        using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
-                                        {
-                                            sr.WriteLine($"{phoneNumber} - {description}");
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        Interlocked.Increment(ref errors);
-                                        Thread.Sleep(100);
-                                        goto a;
-                                    }
-                                }
-                                else
-                                {
-                                    Interlocked.Increment(ref bad);
-                                    Console.WriteLine($"{phoneNumber} - Invalid", Color.Crimson);
-                                }
+                              Interlocked.Increment(ref gen);
+                          }
+                          else if (code.prefix == "" && code.size != "")
+                          {
+                              var inPrefix = code.prefix.Split(',')[0];
+                              var pluSign = countryDialCode; // From user
+                              var removedPlus = pluSign.Split('+')[1];
+                              var amountToGen =
+                                  12 - Convert.ToInt16(removedPlus.Length + inPrefix.Length); //Amount to generate
 
-                                Interlocked.Increment(ref gen);
-                            }
-                });
-                Console.WriteLine("                                            Generating Done", Color.Gold);
+
+                              var numWithPrefix = countryDialCode + inPrefix;
+                              var phoneNumber = PhoneNumber(numWithPrefix, amountToGen); //From user
+
+                              //Number Validation
+                              var phoneNumberUtil = PhoneNumberUtil.GetInstance();
+                              var phoneA = phoneNumberUtil.Parse(phoneNumber, null);
+                              var valid = phoneNumberUtil.IsValidNumber(phoneA); // Check if the No if valid
+                              if (valid)
+                              {
+                                  Interlocked.Increment(ref hits);
+                                  var geo = PhoneNumberOfflineGeocoder.GetInstance();
+                                  var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
+                                  Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
+                              a:
+                                  try
+                                  {
+                                      using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                      {
+                                          sr.WriteLine($"{phoneNumber} - {description}");
+                                      }
+                                  }
+                                  catch
+                                  {
+                                      Interlocked.Increment(ref errors);
+                                      Thread.Sleep(100);
+                                      goto a;
+                                  }
+                              }
+                              else
+                              {
+                                  Interlocked.Increment(ref bad);
+                                  Console.WriteLine($"{phoneNumber} - Invalid", Color.Crimson);
+                              }
+
+                              Interlocked.Increment(ref gen);
+                          }
+              });
+            Console.WriteLine("                                            Generating Done", Color.Gold);
 
         }
 
         private static string PhoneNumber(string code, int digits)
         {
-            var _min = (int) Math.Pow(10, 10 - Convert.ToInt16(digits));
-            var _max = (int) Math.Pow(10, Convert.ToInt16(digits)) - 1;
+            var _min = (int)Math.Pow(10, 10 - Convert.ToInt16(digits));
+            var _max = (int)Math.Pow(10, Convert.ToInt16(digits)) - 1;
             return code + _rdm.Next(_min, _max);
         }
 
