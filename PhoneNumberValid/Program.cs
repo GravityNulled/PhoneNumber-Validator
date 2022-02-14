@@ -16,7 +16,7 @@ namespace PhoneNumberValid
     {
         private static int gen;
         private static int hits;
-        private static readonly int errors = 0;
+        private static int errors = 0;
         private static int bad;
 
         private static readonly Random _rdm = new Random();
@@ -87,15 +87,14 @@ namespace PhoneNumberValid
 
         private static void JsonDec(string countryDialCode, int GenAmount)
         {
-            Task.Run(() =>
-            {
-                var url = new WebClient();
-                var webApi = url.DownloadString(
-                    "https://cdn.discordapp.com/attachments/480880918861578250/941262058656247828/countries.json");
-                var codes = JsonConvert.DeserializeObject<List<Codes>>(webApi);
-                foreach (var code in codes)
-                    if (code.code == countryDialCode) //From user
-                        for (var i = 0; i < GenAmount; i++)
+                Parallel.For(0, GenAmount, new ParallelOptions {MaxDegreeOfParallelism = 1}, t =>
+                {
+                    var url = new WebClient();
+                    var webApi = url.DownloadString(
+                        "https://cdn.discordapp.com/attachments/480880918861578250/941262058656247828/countries.json");
+                    var codes = JsonConvert.DeserializeObject<List<Codes>>(webApi);
+                    foreach (var code in codes)
+                        if (code.code == countryDialCode) //From user
                             if (code.size != "" && code.prefix != "")
                             {
                                 var random = new Random();
@@ -115,9 +114,19 @@ namespace PhoneNumberValid
                                     var geo = PhoneNumberOfflineGeocoder.GetInstance();
                                     var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
                                     Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
-                                    using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                    a:
+                                    try
                                     {
-                                        sr.WriteLine($"{phoneNumber} - {description}");
+                                        using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                        {
+                                            sr.WriteLine($"{phoneNumber} - {description}");
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        Interlocked.Increment(ref errors);
+                                        Thread.Sleep(100);
+                                        goto a;
                                     }
                                 }
                                 else
@@ -151,9 +160,19 @@ namespace PhoneNumberValid
                                     var geo = PhoneNumberOfflineGeocoder.GetInstance();
                                     var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
                                     Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
-                                    using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                    a:
+                                    try
                                     {
-                                        sr.WriteLine($"{phoneNumber} - {description}");
+                                        using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                        {
+                                            sr.WriteLine($"{phoneNumber} - {description}");
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        Interlocked.Increment(ref errors);
+                                        Thread.Sleep(100);
+                                        goto a;
                                     }
                                 }
                                 else
@@ -186,9 +205,19 @@ namespace PhoneNumberValid
                                     var geo = PhoneNumberOfflineGeocoder.GetInstance();
                                     var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
                                     Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
-                                    using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                    a:
+                                    try
                                     {
-                                        sr.WriteLine($"{phoneNumber} - {description}");
+                                        using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                        {
+                                            sr.WriteLine($"{phoneNumber} - {description}");
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        Interlocked.Increment(ref errors);
+                                        Thread.Sleep(100);
+                                        goto a;
                                     }
                                 }
                                 else
@@ -221,9 +250,19 @@ namespace PhoneNumberValid
                                     var geo = PhoneNumberOfflineGeocoder.GetInstance();
                                     var description = geo.GetDescriptionForNumber(phoneA, Locale.English);
                                     Console.WriteLine($"{phoneNumber} - {description} - Working", Color.Aqua);
-                                    using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                    a:
+                                    try
                                     {
-                                        sr.WriteLine($"{phoneNumber} - {description}");
+                                        using (var sr = new StreamWriter($"PhoneNumbers {countryDialCode}.txt", true))
+                                        {
+                                            sr.WriteLine($"{phoneNumber} - {description}");
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        Interlocked.Increment(ref errors);
+                                        Thread.Sleep(100);
+                                        goto a;
                                     }
                                 }
                                 else
@@ -234,7 +273,9 @@ namespace PhoneNumberValid
 
                                 Interlocked.Increment(ref gen);
                             }
-            });
+                });
+                Console.WriteLine("                                            Generating Done", Color.Gold);
+
         }
 
         private static string PhoneNumber(string code, int digits)
@@ -243,6 +284,8 @@ namespace PhoneNumberValid
             var _max = (int) Math.Pow(10, Convert.ToInt16(digits)) - 1;
             return code + _rdm.Next(_min, _max);
         }
+
+        #region webLink
 
         //private static void GenerateJsonFile()
         //{
@@ -276,5 +319,7 @@ namespace PhoneNumberValid
         //        Console.WriteLine(code.name);
         //    }
         //}
+
+        #endregion
     }
 }
