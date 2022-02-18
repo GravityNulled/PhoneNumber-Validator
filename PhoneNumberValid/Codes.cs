@@ -2,9 +2,9 @@
 {
     class Codes
     {
-        public string name { get; set; }
-        public string code { get; set; }
-        public string prefix { get; set; }
-        public string size { get; set; }
+        public string Name { get; set; }
+        public string Code { get; set; }
+        public string Prefix { get; set; }
+        public string Size { get; set; }
     }
 }

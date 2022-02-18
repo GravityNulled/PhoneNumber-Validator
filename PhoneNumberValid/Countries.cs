@@ -2,9 +2,9 @@
 {
     class Countries
     {
-        public string name { get; set; }
-        public string dial_code { get; set; }
-        public string code { get; set; }
+        public string Name { get; set; }
+        public string DialCode { get; set; }
+        public string Code { get; set; }
 
     }
 }

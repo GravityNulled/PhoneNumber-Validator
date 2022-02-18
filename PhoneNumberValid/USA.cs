@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace PhoneNumberValid
 {
-    class USA
+    class Usa
     {
         public List<int> Mississippi { get; set; }
 
@@ -66,7 +66,7 @@ namespace PhoneNumberValid
         public List<int> RhodeIsland { get; set; }
 
         [JsonProperty("Washington, DC")]
-        public List<int> WashingtonDC { get; set; }
+        public List<int> WashingtonDc { get; set; }
 
         [JsonProperty("Virgin Islands")]
         public List<int> VirginIslands { get; set; }
